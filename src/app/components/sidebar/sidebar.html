@@ -1,0 +1,118 @@
+<!-- ======================================================================
+         PANE 1: LEFT COLLAPSIBLE SIDEBAR (OPTIONAL FOLDERS, UNFILED, TAGS)
+         ====================================================================== -->
+<aside class="pane-sidebar">
+    <!-- Brand Header -->
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 border-bottom" style="border-color: var(--border-color) !important;">
+        <div class="d-flex align-items-center gap-2">
+            <div class="brand-logo">
+                <i class="bi bi-journal-check"></i>
+            </div>
+            <div>
+                <div class="fw-bold" style="font-size: 0.98rem; letter-spacing: -0.02em;">Nota</div>
+                <div style="font-size: 0.68rem; color: var(--text-muted);">Lively & Privacy-First</div>
+            </div>
+        </div>
+        <button class="icon-btn" id="collapseSidebarBtn" (click)="toggleSidebar.emit(false)" title="Collapse Sidebar">
+            <i class="bi bi-layout-sidebar"></i>
+        </button>
+    </div>
+
+    <!-- Primary Sidebar New Note Action (Creates Unfiled Note by default unless inside a folder) -->
+    <div class="p-3 pb-2">
+        <button class="btn-accent w-100" id="sidebarNewNoteBtn">
+            <i class="bi bi-plus-lg"></i>
+            <span>New Note</span>
+        </button>
+    </div>
+
+    <!-- Scrollable Sidebar Navigation Body: Quick Views, Optional Folders & Tags -->
+    <div class="flex-grow-1 overflow-y-auto px-2 pb-3">
+        <div class="section-header">
+            <span>Quick Views</span>
+        </div>
+        <div id="quickViewsNav">
+            <button class="nav-item-btn active" data-view="all">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>All Notes</span>
+                </span>
+                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countAll">0</span>
+            </button>
+            <button class="nav-item-btn" data-view="unfiled">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Unfiled Notes</span>
+                </span>
+                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countUnfiled">0</span>
+            </button>
+            <button class="nav-item-btn" data-view="pinned">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-pin-angle" style="color: var(--warm-highlight);"></i>
+                    <span>Pinned</span>
+                </span>
+                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countPinned">0</span>
+            </button>
+            <button class="nav-item-btn" data-view="sensitive">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-lock" style="color: var(--accent);"></i>
+                    <span>Sensitive Vault</span>
+                </span>
+                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countSensitive">0</span>
+            </button>
+            <button class="nav-item-btn" data-view="trash">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-trash3"></i>
+                    <span>Trash</span>
+                </span>
+                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countTrash">0</span>
+            </button>
+        </div>
+
+        <!-- Optional Custom Folders Section -->
+        <div class="section-header mt-2">
+            <span>Folders (Optional)</span>
+            <button class="icon-btn p-0 px-1" id="toggleNewFolderBtn" title="Add New Folder">
+                <i class="bi bi-folder-plus" style="font-size: 0.85rem; color: var(--accent);"></i>
+            </button>
+        </div>
+
+        <!-- Inline New Folder Input Form -->
+        <div id="newFolderForm" class="px-2 mb-2 d-none">
+            <div class="d-flex align-items-center gap-1">
+                <input type="text" id="newFolderInput" class="minimal-select flex-grow-1" placeholder="Folder name..." style="font-size: 0.78rem; padding: 0.3rem 0.55rem;">
+                <button class="btn-accent py-1 px-2" id="saveFolderBtn" style="font-size: 0.75rem;">Add</button>
+            </div>
+        </div>
+
+        <div id="foldersNavList"></div>
+
+        <!-- Tags Filter Section -->
+        <div class="section-header mt-2">
+            <span>Tags</span>
+            <button class="icon-btn p-0 px-1 d-none" id="clearTagFilterBtn" title="Clear Tag Filter" style="font-size: 0.68rem; color: var(--accent);">
+                Clear
+            </button>
+        </div>
+        <div id="tagsFilterContainer" class="px-2 d-flex flex-wrap gap-1"></div>
+    </div>
+
+    <!-- Sidebar Footer: Reference Blueprint & Lively 3-Theme Switcher -->
+    <div class="p-3 border-top" style="border-color: var(--border-color) !important;">
+        <button class="w-100 mb-2 icon-btn justify-content-center border" style="border-color: var(--border-color) !important; background: var(--bg-card); padding: 0.46rem;" data-bs-toggle="modal" data-bs-target="#referenceModal">
+            <i class="bi bi-easel2" style="color: var(--accent);"></i>
+            <span class="fw-medium" style="font-size: 0.77rem;">UI Reference Blueprint</span>
+        </button>
+
+        <div class="d-flex align-items-center justify-content-between gap-1 p-1 rounded-3" style="background: var(--bg-surface);">
+            @for (item of themes; track $index) {
+            <button class="icon-btn flex-grow-1 justify-content-center py-1 theme-btn active"
+                [class.active]="currentTheme() === item.value"
+                (click)="setTheme(item.value)" [attr.data-theme-val]="item.value" [title]="item.label">
+                <i [class]="item.iconClass"></i>
+                <span style="font-size: 0.72rem;">{{ item.displayName }}</span>
+            </button>
+            }
+        </div>
+    </div>
+</aside>
