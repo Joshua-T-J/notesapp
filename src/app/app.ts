@@ -1,47 +1,59 @@
-import { Component, computed, inject } from '@angular/core';
-import { NotesStore } from './services/notes-store';
-import { ConfirmService } from './services/confirm.service';
-import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog';
-import { ThemeService } from './services/theme.service';
-import { NotesGrid } from './components/notes-grid/notes-grid';
-import { NotesToolbar } from './components/notes-toolbar/notes-toolbar';
-import { NoteStudio } from './components/note-studio/note-studio';
-import { QuickActionDock } from './components/quick-action-dock/quick-action-dock';
-import { QuickCapture } from './components/quick-capture/quick-capture';
-import { ReferenceModal } from './components/reference-modal/reference-modal';
-import { Sidebar } from './components/sidebar/sidebar';
+import { Component, DestroyRef, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { ThemeService } from './core/theme/theme.service';
+import { ConfirmDialog } from './shared/ui/confirm-dialog';
+import { Toaster } from './shared/ui/toaster';
+
+/** First path segment, e.g. "" | "privacy" | "app". Focus moves to <main> only when it changes. */
+function section(url: string): string {
+  const path = url.split(/[?#]/)[0] ?? '';
+  const [first = '', second = ''] = path.split('/').filter(Boolean);
+  return first === 'app' && second === 'settings' ? 'app/settings' : first;
+}
 
 @Component({
   selector: 'app-root',
-  imports: [
-    Sidebar,
-    NotesToolbar,
-    QuickCapture,
-    NotesGrid,
-    QuickActionDock,
-    NoteStudio,
-    ReferenceModal,
-    ConfirmDialog,
-  ],
-  templateUrl: './app.html',
-  styleUrl: './app.scss',
-  host: {
-    '(window:keydown.escape)': 'onEscape()',
-  },
+  imports: [RouterOutlet, ConfirmDialog, Toaster],
+  template: `
+    <a class="skip-link" href="#main">Skip to content</a>
+    <router-outlet />
+    <app-confirm-dialog />
+    <app-toaster />
+  `,
 })
 export class App {
-  protected readonly store = inject(NotesStore);
-  private readonly confirm = inject(ConfirmService);
-  // Injected eagerly so the saved theme is applied before the first render.
-  private readonly theme = inject(ThemeService);
+  constructor() {
+    // Created eagerly so the theme is applied (and followed) on every page.
+    inject(ThemeService);
 
-  /** While the studio overlay is open, the views underneath are inert (no tab stops / clicks). */
-  protected readonly studioOpen = computed(() => this.store.detailNoteId() !== null);
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
 
-  protected onEscape(): void {
-    // Esc belongs to the confirm dialog while one is open; don't also close the studio behind it.
-    if (this.confirm.request() === null) {
-      this.store.handleEscape();
-    }
+    // Remember whether the user is on the keyboard or a pointer, for focus rings on borderless
+    // text fields (see .keyboard-focus-ring).
+    const root = document.documentElement;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') root.dataset['modality'] = 'keyboard';
+    };
+    const onPointer = () => (root.dataset['modality'] = 'pointer');
+    document.addEventListener('keydown', onKey, true);
+    document.addEventListener('pointerdown', onPointer, true);
+
+    const router = inject(Router);
+    let current: string | null = null;
+    const sub = router.events.subscribe((event) => {
+      if (!(event instanceof NavigationEnd)) return;
+      const next = section(event.urlAfterRedirects);
+      if (current !== null && next !== current) {
+        // New page: move focus to its main region so screen readers start at the content.
+        setTimeout(() => document.getElementById('main')?.focus({ preventScroll: true }));
+      }
+      current = next;
+    });
+    inject(DestroyRef).onDestroy(() => {
+      sub.unsubscribe();
+      document.removeEventListener('keydown', onKey, true);
+      document.removeEventListener('pointerdown', onPointer, true);
+    });
   }
 }

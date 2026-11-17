@@ -1,0 +1,492 @@
+/* Not encapsulated: the editor's content is created with DOM APIs, so it carries no _ngcontent
+   attributes. Every rule is scoped under app-block-editor instead. */
+app-block-editor {
+  display: block;
+  position: relative;
+}
+
+app-block-editor .editor {
+  min-height: 50vh;
+  outline: none;
+  font-size: 16.5px;
+  line-height: 1.7;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  caret-color: var(--ink);
+  counter-reset: ol;
+}
+
+app-block-editor .editor:focus-visible {
+  outline: none;
+}
+
+[data-modality='keyboard'] app-block-editor .editor:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 8px;
+  border-radius: 6px;
+}
+
+app-block-editor .editor[data-empty='true'] > :first-child {
+  position: relative;
+}
+
+app-block-editor .editor[data-empty='true'] > :first-child::before {
+  content: 'Start writing…';
+  position: absolute;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+
+/* ---------- blocks ---------- */
+app-block-editor .editor :is(p, h2, h3, div, blockquote, pre, figure) {
+  margin: 0;
+}
+
+app-block-editor .editor > p + p {
+  margin-top: 0.55em;
+}
+
+app-block-editor .editor h2 {
+  margin: 1.1em 0 0.3em;
+  font-size: 21px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+app-block-editor .editor h3 {
+  margin: 1em 0 0.2em;
+  font-size: 17.5px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+app-block-editor .editor > :first-child {
+  margin-top: 0;
+}
+
+app-block-editor .editor blockquote {
+  margin: 0.7em 0;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--border-input);
+  color: var(--ink-2);
+}
+
+app-block-editor .editor blockquote + blockquote {
+  margin-top: -0.7em;
+  padding-top: 0.4em;
+}
+
+app-block-editor .editor pre {
+  margin: 0.7em 0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  tab-size: 2;
+}
+
+/* Bullets, numbers and checklist boxes share a 30px gutter. */
+app-block-editor .editor :is([data-type='bullet'], [data-type='ol'], [data-type='todo']) {
+  position: relative;
+  padding: 2px 0 2px 30px;
+}
+
+app-block-editor .editor [data-type='bullet']::after {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: calc(0.85em - 1px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+
+/* Numbers restart after anything that isn't a numbered item. (counter-set runs after
+   counter-increment, so the first item of each run is set to 1 and the rest count up.) */
+app-block-editor .editor [data-type='ol'] {
+  counter-increment: ol;
+}
+
+app-block-editor .editor :not([data-type='ol']) + [data-type='ol'],
+app-block-editor .editor > [data-type='ol']:first-child {
+  counter-set: ol 1;
+}
+
+app-block-editor .editor [data-type='ol']::after {
+  content: counter(ol) '.';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  min-width: 22px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* The checkbox is drawn with ::after; its alternative text tells screen readers the state. */
+app-block-editor .editor [data-type='todo']::after {
+  content: '' / ', not done';
+  position: absolute;
+  left: 2px;
+  top: calc(0.85em - 8px);
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--border-input);
+  border-radius: 5px;
+  background: var(--surface) no-repeat center / 12px 12px;
+  cursor: pointer;
+}
+
+app-block-editor .editor [data-type='todo'][data-checked='true']::after {
+  content: '' / ', done';
+  border-color: var(--accent);
+  background-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E");
+}
+
+[data-theme='dark'] app-block-editor .editor [data-type='todo'][data-checked='true']::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23141416' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E");
+}
+
+app-block-editor .editor [data-type='todo'][data-checked='true'] {
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--ink-3) 60%, transparent);
+}
+
+app-block-editor .editor [data-type] + p,
+app-block-editor .editor p + [data-type]:not([data-type='image']) {
+  margin-top: 0.55em;
+}
+
+/* ---------- alignment ---------- */
+app-block-editor .editor [data-align='center'] {
+  text-align: center;
+}
+
+app-block-editor .editor [data-align='right'] {
+  text-align: right;
+}
+
+app-block-editor .editor [data-align='justify'] {
+  text-align: justify;
+}
+
+/* ---------- inline marks ---------- */
+app-block-editor .editor strong {
+  font-weight: 650;
+}
+
+app-block-editor .editor u {
+  text-underline-offset: 3px;
+}
+
+app-block-editor .editor s {
+  text-decoration-thickness: 1.5px;
+}
+
+app-block-editor .editor code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+
+app-block-editor .editor pre code {
+  padding: 0;
+  background: none;
+}
+
+app-block-editor .editor a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ink-3);
+  cursor: text;
+}
+
+app-block-editor .editor mark {
+  padding: 1px 2px;
+  border-radius: 3px;
+  color: var(--ink);
+}
+
+app-block-editor .editor [data-size='-2'] {
+  font-size: 0.75em;
+}
+app-block-editor .editor [data-size='-1'] {
+  font-size: 0.875em;
+}
+app-block-editor .editor [data-size='1'] {
+  font-size: 1.15em;
+}
+app-block-editor .editor [data-size='2'] {
+  font-size: 1.35em;
+}
+app-block-editor .editor [data-size='3'] {
+  font-size: 1.6em;
+  line-height: 1.35;
+}
+app-block-editor .editor [data-size='4'] {
+  font-size: 2em;
+  line-height: 1.25;
+}
+
+/* ---------- images ---------- */
+app-block-editor .editor figure {
+  position: relative;
+  width: 70%;
+  margin: 0.8em 0;
+  border-radius: 10px;
+  outline: none;
+}
+
+app-block-editor .editor figure[data-width='sm'] {
+  width: 40%;
+}
+
+app-block-editor .editor figure[data-width='full'] {
+  width: 100%;
+}
+
+app-block-editor .editor figure[data-align='center'] {
+  margin-inline: auto;
+}
+
+app-block-editor .editor figure[data-align='right'] {
+  margin-left: auto;
+}
+
+app-block-editor .editor figure img {
+  display: block;
+  width: 100%;
+  min-height: 60px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+app-block-editor .editor figure:focus-visible,
+app-block-editor .editor figure:focus-within,
+app-block-editor .editor figure.selected {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--focus);
+}
+
+app-block-editor .editor figure.missing img {
+  aspect-ratio: 16 / 9;
+}
+
+app-block-editor .editor figure.missing::after {
+  content: 'Image unavailable';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  font-size: 14px;
+}
+
+app-block-editor .figure-tools {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: var(--shadow-pop);
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
+  white-space: nowrap;
+}
+
+app-block-editor figure:hover .figure-tools,
+app-block-editor figure:focus-within .figure-tools,
+app-block-editor figure.selected .figure-tools {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  app-block-editor .figure-tools {
+    opacity: 1;
+  }
+}
+
+app-block-editor .figure-tools button {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+app-block-editor .figure-tools button:hover {
+  background: var(--surface-2);
+}
+
+app-block-editor .figure-tools button[aria-pressed='true'] {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border-input);
+}
+
+app-block-editor .figure-tools button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 0;
+}
+
+app-block-editor .editor[aria-readonly='true'] {
+  color: var(--ink-2);
+}
+
+app-block-editor .editor[aria-readonly='true'] .figure-tools {
+  display: none;
+}
+
+/* ---------- popovers (link, image description) ---------- */
+app-block-editor .pop-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+app-block-editor .pop {
+  position: fixed;
+  z-index: 50;
+  width: min(340px, calc(100vw - 24px));
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-pop);
+  color: var(--ink);
+  font-size: 14px;
+  white-space: normal;
+}
+
+app-block-editor .pop label {
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+app-block-editor .pop .hint {
+  margin: -4px 0 0;
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+app-block-editor .pop .error {
+  margin: -4px 0 0;
+  color: var(--danger);
+  font-size: 12.5px;
+}
+
+app-block-editor .pop textarea {
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+app-block-editor .pop .actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+app-block-editor .pop .actions .spacer {
+  flex: 1;
+}
+
+app-block-editor .pop .small {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 13.5px;
+}
+
+app-block-editor .editor [data-color='gray'] {
+  color: var(--tc-gray);
+}
+app-block-editor .editor mark [data-color='gray'] {
+  color: var(--tc-gray-on-hl);
+}
+
+app-block-editor .editor [data-color='red'] {
+  color: var(--tc-red);
+}
+app-block-editor .editor mark [data-color='red'] {
+  color: var(--tc-red-on-hl);
+}
+
+app-block-editor .editor [data-color='orange'] {
+  color: var(--tc-orange);
+}
+app-block-editor .editor mark [data-color='orange'] {
+  color: var(--tc-orange-on-hl);
+}
+
+app-block-editor .editor [data-color='green'] {
+  color: var(--tc-green);
+}
+app-block-editor .editor mark [data-color='green'] {
+  color: var(--tc-green-on-hl);
+}
+
+app-block-editor .editor [data-color='blue'] {
+  color: var(--tc-blue);
+}
+app-block-editor .editor mark [data-color='blue'] {
+  color: var(--tc-blue-on-hl);
+}
+
+app-block-editor .editor [data-color='purple'] {
+  color: var(--tc-purple);
+}
+app-block-editor .editor mark [data-color='purple'] {
+  color: var(--tc-purple-on-hl);
+}
+
+app-block-editor .editor [data-color='pink'] {
+  color: var(--tc-pink);
+}
+app-block-editor .editor mark [data-color='pink'] {
+  color: var(--tc-pink-on-hl);
+}
+
+app-block-editor .editor mark[data-hl='yellow'] {
+  background: var(--hl-yellow);
+}
+
+app-block-editor .editor mark[data-hl='green'] {
+  background: var(--hl-green);
+}
+
+app-block-editor .editor mark[data-hl='blue'] {
+  background: var(--hl-blue);
+}
+
+app-block-editor .editor mark[data-hl='pink'] {
+  background: var(--hl-pink);
+}
+
+app-block-editor .editor mark[data-hl='purple'] {
+  background: var(--hl-purple);
+}
+
+app-block-editor .editor mark[data-hl='orange'] {
+  background: var(--hl-orange);
+}

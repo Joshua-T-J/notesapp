@@ -1,0 +1,292 @@
+<div class="toolbar" role="toolbar" aria-label="Formatting" aria-controls="note-body">
+  <!-- History -->
+  <div class="group">
+    <button
+      type="button"
+      data-tool
+      class="btn btn-ghost tool"
+      aria-label="Undo"
+      [attr.aria-disabled]="!editor()?.canUndo()"
+      [appTooltip]="'Undo (' + mod + '+Z)'"
+      (mousedown)="$event.preventDefault()"
+      (click)="undo()"
+    >
+      <app-icon name="undo" [size]="17" />
+    </button>
+    <button
+      type="button"
+      data-tool
+      class="btn btn-ghost tool"
+      aria-label="Redo"
+      [attr.aria-disabled]="!editor()?.canRedo()"
+      [appTooltip]="'Redo (' + mod + '+Shift+Z)'"
+      (mousedown)="$event.preventDefault()"
+      (click)="redo()"
+    >
+      <app-icon name="redo" [size]="17" />
+    </button>
+  </div>
+
+  <!-- Text style -->
+  <div class="group">
+    <div class="rel" appMenu #styleMenu="appMenu">
+      <button
+        type="button"
+        data-tool
+        class="btn btn-ghost tool dropdown style-btn"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="styleMenu.open()"
+        [attr.aria-label]="'Text style: ' + styleLabel()"
+        (mousedown)="$event.preventDefault()"
+        (click)="styleMenu.toggle()"
+      >
+        <span class="style-name">{{ styleLabel() }}</span>
+        <app-icon class="chev" name="chevronDown" [size]="12" [stroke]="2.4" />
+      </button>
+      @if (styleMenu.open()) {
+        <div class="menu pop-menu" role="menu" aria-label="Text style">
+          @for (s of styles; track s.type) {
+            <button
+              type="button"
+              role="menuitemradio"
+              [class]="'menu-item style-' + s.type"
+              [attr.aria-checked]="styleLabel() === s.label"
+              (mousedown)="$event.preventDefault()"
+              (click)="setStyle(s.type, styleMenu)"
+            >
+              <span class="grow">{{ s.label }}</span>
+              @if (styleLabel() === s.label) {
+                <app-icon name="check" [size]="15" />
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+    <button
+      type="button"
+      data-tool
+      class="btn btn-ghost tool"
+      aria-label="Smaller text"
+      [attr.aria-disabled]="size() <= -2"
+      [appTooltip]="'Smaller text (' + mod + '+Shift+<)'"
+      (mousedown)="$event.preventDefault()"
+      (click)="resize(-1)"
+    >
+      <app-icon name="textSmaller" [size]="18" />
+    </button>
+    <button
+      type="button"
+      data-tool
+      class="btn btn-ghost tool"
+      aria-label="Larger text"
+      [attr.aria-disabled]="size() >= 4"
+      [appTooltip]="'Larger text (' + mod + '+Shift+>)'"
+      (mousedown)="$event.preventDefault()"
+      (click)="resize(1)"
+    >
+      <app-icon name="textLarger" [size]="18" />
+    </button>
+  </div>
+
+  <!-- Inline marks -->
+  <div class="group">
+    @for (m of marks; track m.mark) {
+      <button
+        type="button"
+        data-tool
+        class="btn btn-ghost tool"
+        [attr.aria-label]="m.label"
+        [attr.aria-pressed]="state()?.marks?.[m.mark] ?? false"
+        [appTooltip]="m.label + ' (' + m.keys + ')'"
+        (mousedown)="$event.preventDefault()"
+        (click)="toggle(m.mark)"
+      >
+        <app-icon [name]="m.icon" [size]="17" [stroke]="m.mark === 'bold' ? 2.4 : 2" />
+      </button>
+    }
+  </div>
+
+  <!-- Colour, highlight, link -->
+  <div class="group">
+    <div class="rel" appMenu #colorMenu="appMenu">
+      <button
+        type="button"
+        data-tool
+        class="btn btn-ghost tool dropdown swatch-btn"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="colorMenu.open()"
+        [attr.aria-label]="'Text colour: ' + colorName()"
+        appTooltip="Text colour"
+        (mousedown)="$event.preventDefault()"
+        (click)="colorMenu.toggle()"
+      >
+        <span class="swatch-icon">
+          <app-icon name="textColor" [size]="17" />
+          <span class="bar" [attr.data-color]="state()?.marks?.color ?? 'default'"></span>
+        </span>
+        <app-icon class="chev" name="chevronDown" [size]="12" [stroke]="2.4" />
+      </button>
+      @if (colorMenu.open()) {
+        <div class="menu pop-menu" role="menu" aria-label="Text colour">
+          @for (c of colors; track c.label) {
+            <button
+              type="button"
+              role="menuitemradio"
+              class="menu-item"
+              [attr.aria-checked]="(state()?.marks?.color ?? null) === c.value"
+              (mousedown)="$event.preventDefault()"
+              (click)="setColor(c.value, colorMenu)"
+            >
+              <span class="sample-text" [attr.data-color]="c.value ?? 'default'" aria-hidden="true"
+                >A</span
+              >
+              <span class="grow">{{ c.label }}</span>
+              @if ((state()?.marks?.color ?? null) === c.value) {
+                <app-icon name="check" [size]="15" />
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="rel" appMenu #hlMenu="appMenu">
+      <button
+        type="button"
+        data-tool
+        class="btn btn-ghost tool dropdown swatch-btn"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="hlMenu.open()"
+        [attr.aria-label]="'Highlight: ' + highlightName()"
+        appTooltip="Highlight"
+        (mousedown)="$event.preventDefault()"
+        (click)="hlMenu.toggle()"
+      >
+        <span class="swatch-icon">
+          <app-icon name="highlighter" [size]="17" />
+          <span class="bar" [attr.data-hl]="state()?.marks?.highlight ?? 'none'"></span>
+        </span>
+        <app-icon class="chev" name="chevronDown" [size]="12" [stroke]="2.4" />
+      </button>
+      @if (hlMenu.open()) {
+        <div class="menu pop-menu" role="menu" aria-label="Highlight">
+          @for (h of highlights; track h.label) {
+            <button
+              type="button"
+              role="menuitemradio"
+              class="menu-item"
+              [attr.aria-checked]="(state()?.marks?.highlight ?? null) === h.value"
+              (mousedown)="$event.preventDefault()"
+              (click)="setHighlight(h.value, hlMenu)"
+            >
+              <span class="sample-hl" [attr.data-hl]="h.value ?? 'none'" aria-hidden="true"
+                >Ab</span
+              >
+              <span class="grow">{{ h.label }}</span>
+              @if ((state()?.marks?.highlight ?? null) === h.value) {
+                <app-icon name="check" [size]="15" />
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <button
+      type="button"
+      data-tool
+      class="btn btn-ghost tool"
+      aria-label="Link"
+      [attr.aria-pressed]="!!state()?.marks?.href"
+      [appTooltip]="'Link (' + mod + '+K)'"
+      (mousedown)="$event.preventDefault()"
+      (click)="link()"
+    >
+      <app-icon name="link" [size]="17" />
+    </button>
+  </div>
+
+  <!-- Lists -->
+  <div class="group">
+    @for (l of lists; track l.type) {
+      <button
+        type="button"
+        data-tool
+        class="btn btn-ghost tool"
+        [attr.aria-label]="l.label"
+        [attr.aria-pressed]="isList(l.type)"
+        [appTooltip]="l.label + ' (' + l.keys + ')'"
+        (mousedown)="$event.preventDefault()"
+        (click)="list(l.type)"
+      >
+        <app-icon [name]="l.icon" [size]="17" />
+      </button>
+    }
+  </div>
+
+  <!-- Alignment, image, clear -->
+  <div class="group">
+    <div class="rel" appMenu #alignMenu="appMenu">
+      <button
+        type="button"
+        data-tool
+        class="btn btn-ghost tool dropdown"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="alignMenu.open()"
+        [attr.aria-disabled]="!alignable()"
+        aria-label="Alignment"
+        [appTooltip]="
+          alignable() ? 'Alignment' : 'Alignment (lists, quotes and code stay left-aligned)'
+        "
+        (mousedown)="$event.preventDefault()"
+        (click)="alignable() && alignMenu.toggle()"
+      >
+        <app-icon [name]="alignIcon()" [size]="17" />
+        <app-icon class="chev" name="chevronDown" [size]="12" [stroke]="2.4" />
+      </button>
+      @if (alignMenu.open()) {
+        <div class="menu pop-menu align-menu" role="menu" aria-label="Alignment">
+          @for (a of aligns; track a.value) {
+            <button
+              type="button"
+              role="menuitemradio"
+              class="menu-item"
+              [attr.aria-checked]="(state()?.align ?? 'left') === a.value"
+              (mousedown)="$event.preventDefault()"
+              (click)="align(a.value, alignMenu)"
+            >
+              <app-icon [name]="a.icon" [size]="16" />
+              <span class="grow">{{ a.label }}</span>
+              @if ((state()?.align ?? 'left') === a.value) {
+                <app-icon name="check" [size]="15" />
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+    <button
+      type="button"
+      data-tool
+      class="btn btn-ghost tool"
+      aria-label="Insert image"
+      appTooltip="Insert image (or paste / drop one)"
+      (mousedown)="$event.preventDefault()"
+      (click)="image()"
+    >
+      <app-icon name="image" [size]="17" />
+    </button>
+    <button
+      type="button"
+      data-tool
+      class="btn btn-ghost tool"
+      aria-label="Clear formatting"
+      [appTooltip]="'Clear formatting (' + mod + '+\\)'"
+      (mousedown)="$event.preventDefault()"
+      (click)="clear()"
+    >
+      <app-icon name="eraser" [size]="17" />
+    </button>
+  </div>
+</div>

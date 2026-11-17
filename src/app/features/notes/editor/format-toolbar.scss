@@ -1,0 +1,212 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 0;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 4px;
+}
+
+.group + .group {
+  border-left: 1px solid var(--border);
+}
+
+.group:first-child {
+  padding-left: 0;
+}
+
+.rel {
+  position: relative;
+}
+
+.tool {
+  position: relative;
+  width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 7px;
+}
+
+.tool[aria-disabled='true'],
+.dropdown[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Dropdown triggers look like small select fields: a fill, a border and a chevron. */
+.dropdown {
+  width: auto;
+  gap: 2px;
+  margin: 0 1px;
+  padding: 0 5px 0 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.dropdown:hover {
+  border-color: var(--border-strong);
+}
+
+.dropdown[aria-expanded='true'] {
+  border-color: var(--border-input);
+  background: var(--surface);
+}
+
+.dropdown .chev {
+  color: var(--ink-3);
+}
+
+.style-btn {
+  gap: 6px;
+  padding: 0 6px 0 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.style-name {
+  min-width: 62px;
+  text-align: left;
+}
+
+.swatch-icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 24px;
+}
+
+.swatch-btn .bar {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.bar[data-color='default'] {
+  background: var(--ink);
+}
+
+.bar[data-hl='none'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--border-input);
+}
+
+@each $c in 'gray', 'red', 'orange', 'green', 'blue', 'purple', 'pink' {
+  .bar[data-color='#{$c}'],
+  .sample-text[data-color='#{$c}'] {
+    color: var(--tc-#{$c});
+  }
+  .bar[data-color='#{$c}'] {
+    background: var(--tc-#{$c});
+  }
+}
+
+@each $h in 'yellow', 'green', 'blue', 'pink', 'purple', 'orange' {
+  .bar[data-hl='#{$h}'],
+  .sample-hl[data-hl='#{$h}'] {
+    background: var(--hl-#{$h});
+  }
+  .bar[data-hl='#{$h}'] {
+    box-shadow: inset 0 0 0 1px var(--border-input);
+  }
+}
+
+.pop-menu {
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 190px;
+}
+
+.grow {
+  flex: 1;
+}
+
+.sample-text {
+  width: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sample-hl {
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.sample-hl[data-hl='none'] {
+  box-shadow: inset 0 0 0 1px var(--border-input);
+}
+
+.style-h2 {
+  font-family: var(--font-title);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.style-h3 {
+  font-family: var(--font-title);
+  font-weight: 600;
+}
+
+.style-quote {
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.style-code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    padding: 4px 8px;
+  }
+
+  .group {
+    padding: 0 3px;
+  }
+
+  .group + .group {
+    border-left: 0;
+  }
+
+  .style-name {
+    min-width: 0;
+  }
+}
+
+/* Phones: menus span the screen width so they never run off the edge. */
+@media (max-width: 760px) {
+  .pop-menu {
+    position: fixed;
+    top: 112px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}
+
+/* The alignment menu sits near the right end of the toolbar: open it leftwards. */
+@media (min-width: 761px) {
+  .align-menu {
+    left: auto;
+    right: 0;
+  }
+}

@@ -1,0 +1,283 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.back {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .back {
+    display: inline-flex;
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+.rel {
+  position: relative;
+}
+
+.tool {
+  width: 36px;
+  min-height: 36px;
+}
+
+.tool.on {
+  color: var(--accent);
+}
+
+.export-btn {
+  min-height: 36px;
+  margin: 0 2px;
+  padding: 0 12px;
+}
+
+.export-menu,
+.more-menu {
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 240px;
+}
+
+@media (max-width: 760px) {
+  .export-label {
+    display: none;
+  }
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.doc {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 40px 32px 96px;
+}
+
+@media (max-width: 760px) {
+  .doc {
+    padding: 20px 20px 80px;
+  }
+}
+
+.edited {
+  margin: 0 0 8px;
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+.title {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  field-sizing: content;
+  color: var(--ink);
+  font-family: var(--font-title);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.title::placeholder {
+  color: var(--ink-3);
+}
+
+.title:focus-visible {
+  outline: none;
+}
+
+/* Reached with Tab: show where focus is (WCAG 2.4.7). Clicking in shows only the caret. */
+:host-context([data-modality='keyboard']) .title:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 8px;
+  border-radius: 6px;
+}
+
+@media (max-width: 760px) {
+  .title {
+    font-size: 26px;
+  }
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 22px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 28px;
+  padding: 0 4px 0 10px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.tag-text {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-x {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink-3);
+}
+
+.tag-x:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+.add-tag {
+  min-height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.add-tag:hover {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+.tag-input {
+  width: 120px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border-input);
+  border-radius: 7px;
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.locked {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  background: var(--bg);
+  color: var(--ink-2);
+}
+
+.locked h2 {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.locked p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 20px;
+  border-top: 1px solid var(--border);
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+.saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.saved.error {
+  color: var(--danger);
+}
+
+.phone-heading {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .phone-heading {
+    display: block;
+  }
+}
+
+/* Narrow phones: the folder name gives up space (and truncates) before anything wraps. */
+@media (max-width: 760px) {
+  .bar app-folder-picker {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .bar > .spacer {
+    display: none;
+  }
+
+  /* Shrink the folder name instead of wrapping buttons onto a second line. */
+  .bar {
+    flex-wrap: nowrap;
+    padding-inline: 6px;
+  }
+}

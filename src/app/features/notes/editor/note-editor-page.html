@@ -1,0 +1,225 @@
+@if (note(); as n) {
+  <article class="page" [attr.aria-label]="n.title || 'Untitled'">
+    <!-- On phones the list (and its h1) is hidden while a note is open; this keeps one h1. -->
+    <h1 class="phone-heading visually-hidden">{{ n.title || 'Untitled' }}</h1>
+    <header class="bar">
+      <a routerLink="/app" class="btn btn-ghost btn-icon back" aria-label="Back to notes">
+        <app-icon name="chevronLeft" />
+      </a>
+
+      @if (!inTrash()) {
+        <app-folder-picker [folderId]="n.folderId" (changed)="setFolder($event)" />
+      }
+      <span class="spacer"></span>
+
+      @if (!inTrash()) {
+        <button
+          type="button"
+          class="btn btn-ghost btn-icon tool"
+          [class.on]="n.pinned"
+          [attr.aria-pressed]="n.pinned"
+          [attr.aria-label]="n.pinned ? 'Unpin note' : 'Pin note'"
+          [appTooltip]="n.pinned ? 'Unpin' : 'Pin'"
+          (click)="store.togglePin(n.id)"
+        >
+          <app-icon name="pin" [size]="17" />
+        </button>
+        <button
+          type="button"
+          class="btn btn-ghost btn-icon tool"
+          [attr.aria-pressed]="n.locked"
+          [attr.aria-label]="n.locked ? 'Unlock note' : 'Lock note'"
+          [appTooltip]="n.locked ? 'Unlock' : 'Lock'"
+          (click)="store.toggleLock(n.id)"
+        >
+          <app-icon [name]="n.locked ? 'lock' : 'unlock'" [size]="17" />
+        </button>
+        <div class="rel" appMenu #exportMenu="appMenu">
+          <button
+            type="button"
+            class="btn btn-secondary export-btn"
+            aria-label="Export"
+            aria-haspopup="menu"
+            [attr.aria-expanded]="exportMenu.open()"
+            (click)="exportMenu.toggle()"
+          >
+            <app-icon name="download" [size]="16" />
+            <span class="export-label">Export</span>
+          </button>
+          @if (exportMenu.open()) {
+            <div class="menu export-menu" role="menu" aria-label="Export note">
+              <button
+                type="button"
+                role="menuitem"
+                class="menu-item"
+                (click)="export('md', exportMenu)"
+              >
+                <span>Markdown (.md)<small>Keeps headings, lists and checkboxes</small></span>
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                class="menu-item"
+                (click)="export('txt', exportMenu)"
+              >
+                <span>Plain text (.txt)<small>Text only</small></span>
+              </button>
+              <div class="menu-sep" role="separator"></div>
+              <button
+                type="button"
+                role="menuitem"
+                class="menu-item"
+                (click)="copyMarkdown(exportMenu)"
+              >
+                Copy as Markdown
+              </button>
+            </div>
+          }
+        </div>
+        <div class="rel" appMenu #moreMenu="appMenu">
+          <button
+            type="button"
+            class="btn btn-ghost btn-icon tool"
+            aria-haspopup="menu"
+            aria-label="More actions"
+            [attr.aria-expanded]="moreMenu.open()"
+            (click)="moreMenu.toggle()"
+          >
+            <app-icon name="more" [size]="18" [stroke]="2.4" />
+          </button>
+          @if (moreMenu.open()) {
+            <div class="menu more-menu" role="menu" aria-label="More actions">
+              <button type="button" role="menuitem" class="menu-item" (click)="duplicate(moreMenu)">
+                <app-icon name="copy" [size]="16" /> Duplicate
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                class="menu-item danger"
+                (click)="trash(moreMenu)"
+              >
+                <app-icon name="trash" [size]="16" /> Move to Trash
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </header>
+
+    @if (!inTrash() && !hidden()) {
+      <app-format-toolbar [editor]="editor()" />
+    }
+
+    @if (inTrash()) {
+      <div class="banner" role="note">
+        <span>This note is in Trash.</span>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-secondary" (click)="restore()">
+          <app-icon name="restore" [size]="16" /> Restore
+        </button>
+        <button type="button" class="btn btn-danger" (click)="deleteForever()">
+          Delete permanently
+        </button>
+      </div>
+    }
+
+    <div class="scroll">
+      <div class="doc">
+        <p class="edited">{{ edited() }}</p>
+        <label class="visually-hidden" for="note-title">Title</label>
+        <textarea
+          #titleInput
+          id="note-title"
+          class="title keyboard-focus-ring"
+          rows="1"
+          placeholder="Title"
+          maxlength="500"
+          spellcheck="true"
+          [readOnly]="inTrash()"
+          [value]="n.title"
+          (input)="onTitle(n.id, titleInput)"
+          (keydown)="titleKeydown($event)"
+        ></textarea>
+
+        <div class="tags">
+          @for (tag of n.tags; track tag) {
+            <span class="tag">
+              <span class="tag-text" appClipTooltip>#{{ tag }}</span>
+              @if (!inTrash()) {
+                <button
+                  type="button"
+                  class="tag-x"
+                  [attr.aria-label]="'Remove tag ' + tag"
+                  (click)="store.removeTag(n.id, tag)"
+                >
+                  <app-icon name="x" [size]="12" [stroke]="2.5" />
+                </button>
+              }
+            </span>
+          }
+          @if (!inTrash()) {
+            @if (addingTag()) {
+              <label class="visually-hidden" for="tag-input">New tag</label>
+              <input
+                #tagInput
+                id="tag-input"
+                class="tag-input"
+                placeholder="tag"
+                maxlength="60"
+                (keydown.enter)="commitTag(n.id, tagInput, true)"
+                (keydown.escape)="$event.stopPropagation(); addingTag.set(false)"
+                (blur)="commitTag(n.id, tagInput, false)"
+              />
+            } @else {
+              <button type="button" class="add-tag" aria-label="Add tag" (click)="startTag()">
+                + Tag
+              </button>
+            }
+          }
+        </div>
+
+        @if (hidden()) {
+          <div class="locked">
+            <app-icon name="lock" [size]="22" />
+            <div>
+              <h2>This note is locked</h2>
+              <p>
+                Its text stays hidden until you choose to show it. Locking hides text on screen; it
+                is not encryption.
+              </p>
+            </div>
+            <button type="button" class="btn btn-primary" (click)="store.unlock(n.id)">
+              Show note
+            </button>
+          </div>
+        } @else {
+          <app-block-editor
+            id="note-body"
+            [noteId]="n.id"
+            [blocks]="n.body"
+            [readonly]="inTrash()"
+            (changed)="onBody(n.id, $event)"
+          />
+        }
+      </div>
+    </div>
+
+    <footer class="foot">
+      <span>{{ hidden() ? '' : stats() }}</span>
+      <span class="spacer"></span>
+      <span class="saved" [class.error]="store.saveState() === 'error'" aria-hidden="true">
+        <app-icon
+          [name]="store.saveState() === 'error' ? 'alert' : 'check'"
+          [size]="14"
+          [stroke]="2.2"
+        />
+        {{ saveLabel() }}
+      </span>
+      <span class="visually-hidden" role="alert">
+        @if (store.saveState() === 'error') {
+          Not saved. Browser storage is full or blocked. Export your notes to keep them.
+        }
+      </span>
+    </footer>
+  </article>
+}

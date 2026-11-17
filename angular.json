@@ -1,18 +1,12 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "cli": {
-    "packageManager": "npm"
-  },
+  "cli": { "packageManager": "npm", "analytics": false },
   "newProjectRoot": "projects",
   "projects": {
     "NotesApp": {
       "projectType": "application",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss"
-        }
-      },
+      "schematics": { "@schematics/angular:component": { "style": "scss" } },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -21,35 +15,28 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+            "server": "src/main.server.ts",
+            "outputMode": "static",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
+            "assets": [{ "glob": "**/*", "input": "public" }],
             "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+              "node_modules/@fontsource-variable/figtree/wght.css",
+              "node_modules/@fontsource-variable/schibsted-grotesk/wght.css",
               "src/styles.scss"
-            ],
-            "scripts": ["node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"]
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
+                { "type": "initial", "maximumWarning": "500kB", "maximumError": "700kB" },
+                { "type": "anyComponentStyle", "maximumWarning": "10kB", "maximumError": "14kB" }
               ],
+              "optimization": {
+                "scripts": true,
+                "styles": { "minify": true, "inlineCritical": false },
+                "fonts": false
+              },
               "outputHashing": "all"
             },
             "development": {
@@ -63,18 +50,12 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": {
-              "buildTarget": "NotesApp:build:production"
-            },
-            "development": {
-              "buildTarget": "NotesApp:build:development"
-            }
+            "production": { "buildTarget": "NotesApp:build:production" },
+            "development": { "buildTarget": "NotesApp:build:development" }
           },
           "defaultConfiguration": "development"
         },
-        "test": {
-          "builder": "@angular/build:unit-test"
-        }
+        "test": { "builder": "@angular/build:unit-test" }
       }
     }
   }

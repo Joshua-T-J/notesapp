@@ -1,0 +1,292 @@
+<aside class="sidebar" aria-label="Library">
+  <div class="brand">
+    <a routerLink="/" class="wordmark" [attr.aria-label]="rail() ? 'Nota home' : null">
+      <span class="full-only">Nota</span>
+      <span class="rail-only mark" aria-hidden="true">N</span>
+    </a>
+    <button
+      type="button"
+      class="btn btn-ghost btn-icon collapse-btn"
+      [attr.aria-label]="rail() ? 'Expand sidebar' : 'Collapse sidebar'"
+      [attr.aria-expanded]="!rail()"
+      [appTooltip]="rail() ? 'Expand sidebar' : 'Collapse sidebar'"
+      [tooltipSide]="rail() ? 'right' : 'bottom'"
+      (click)="toggleCollapsed()"
+    >
+      <app-icon name="sidebar" [size]="18" />
+    </button>
+    <button
+      type="button"
+      class="btn btn-ghost btn-icon close-btn"
+      aria-label="Close menu"
+      (click)="closeDrawer.emit()"
+    >
+      <app-icon name="x" />
+    </button>
+  </div>
+
+  <div class="new">
+    <button
+      type="button"
+      class="btn btn-primary new-btn"
+      [attr.aria-label]="rail() ? 'New note' : null"
+      [appTooltip]="tip('New note (N)')"
+      tooltipSide="right"
+      (click)="newNote.emit()"
+    >
+      <app-icon name="plus" />
+      <span class="full-only">New note</span>
+    </button>
+  </div>
+
+  <nav class="nav" aria-label="Views, folders and tags">
+    <ul class="items" role="list">
+      @for (item of views(); track item.label) {
+        <li>
+          <button
+            type="button"
+            class="item"
+            [attr.aria-current]="isCurrent(item.view) ? 'page' : null"
+            [attr.aria-label]="rail() ? item.label + ', ' + item.count : null"
+            [appTooltip]="tip(item.label + ' · ' + item.count)"
+            tooltipSide="right"
+            (click)="select(item.view)"
+          >
+            <app-icon [name]="item.icon" [size]="17" />
+            <span class="label">{{ item.label }}</span>
+            <span class="count">{{ item.count }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+
+    <div class="heading">
+      <h2 id="folders-heading" class="full-only">Folders</h2>
+      <button
+        type="button"
+        class="btn btn-ghost mini add-folder"
+        aria-label="New folder"
+        [appTooltip]="rail() ? 'New folder' : 'New folder'"
+        [tooltipSide]="rail() ? 'right' : 'bottom'"
+        (click)="startAddFolder()"
+      >
+        <app-icon [name]="rail() ? 'folderPlus' : 'plus'" [size]="16" />
+      </button>
+    </div>
+
+    @if (addingFolder() && !rail()) {
+      <form class="folder-form" (submit)="$event.preventDefault(); commitFolder(folderInput)">
+        <label class="field-label" for="new-folder">Folder name</label>
+        <input
+          #folderInput
+          id="new-folder"
+          class="inline-input"
+          maxlength="120"
+          autocomplete="off"
+          (keydown.escape)="$event.stopPropagation(); cancelFolder()"
+        />
+        <app-folder-color-picker [(value)]="newFolderColor" legend="Colour" [columns]="5" />
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost small" (click)="cancelFolder()">Cancel</button>
+          <button type="submit" class="btn btn-primary small">Add folder</button>
+        </div>
+      </form>
+    }
+
+    <ul class="items" role="list" aria-label="Folders">
+      @for (folder of store.folderEntries(); track folder.id) {
+        <li class="folder-row" appMenu #menu="appMenu">
+          @if (renamingId() === folder.id && !rail()) {
+            <label class="visually-hidden" [for]="'rename-' + folder.id">Rename folder</label>
+            <input
+              #rename
+              class="inline-input"
+              [id]="'rename-' + folder.id"
+              [value]="folder.name"
+              maxlength="120"
+              (keydown.enter)="commitRename(folder.id, rename)"
+              (keydown.escape)="$event.stopPropagation(); renamingId.set(null)"
+              (blur)="commitRename(folder.id, rename)"
+            />
+          } @else {
+            <button
+              type="button"
+              class="item"
+              [attr.aria-current]="isFolderCurrent(folder.id) ? 'page' : null"
+              [attr.aria-label]="rail() ? folder.name + ', ' + folder.count : null"
+              [appTooltip]="tip(folder.name + ' · ' + folder.count)"
+              appClipTooltip
+              clipTarget=".label"
+              tooltipSide="right"
+              (click)="selectFolder(folder.id)"
+            >
+              <span class="dot-wrap"
+                ><span class="dot" [style.background]="'var(--folder-' + folder.color + ')'"></span
+              ></span>
+              <span class="label">{{ folder.name }}</span>
+              <span class="count">{{ folder.count }}</span>
+            </button>
+            @if (!rail()) {
+              <button
+                type="button"
+                class="btn btn-ghost mini row-menu"
+                aria-haspopup="menu"
+                [attr.aria-expanded]="menu.open()"
+                [attr.aria-label]="'Options for ' + folder.name"
+                (click)="menu.toggle()"
+              >
+                <app-icon name="more" [size]="16" />
+              </button>
+            }
+            @if (menu.open()) {
+              <div class="menu folder-menu" role="menu" [attr.aria-label]="folder.name">
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="menu-item"
+                  (click)="startRename(folder, menu)"
+                >
+                  Rename
+                </button>
+                <div class="menu-sep" role="separator"></div>
+                <p class="menu-label" aria-hidden="true">Colour</p>
+                <div class="color-row" role="group" aria-label="Colour">
+                  @for (c of colorOptions; track c.value) {
+                    <button
+                      type="button"
+                      role="menuitemradio"
+                      class="color-item"
+                      [attr.aria-checked]="folder.color === c.value"
+                      [attr.aria-label]="c.name"
+                      [appTooltip]="c.name"
+                      tooltipSide="top"
+                      (click)="setColor(folder, c.value, menu)"
+                    >
+                      <span
+                        class="chip"
+                        [style.background]="'var(--folder-' + c.value + ')'"
+                      ></span>
+                    </button>
+                  }
+                </div>
+                <div class="menu-sep" role="separator"></div>
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="menu-item danger"
+                  (click)="deleteFolder(folder, menu)"
+                >
+                  Delete folder
+                </button>
+              </div>
+            }
+          }
+        </li>
+      } @empty {
+        @if (!addingFolder() && !rail()) {
+          <li class="hint">No folders yet</li>
+        }
+      }
+    </ul>
+
+    @if (store.tagEntries().length) {
+      @if (rail()) {
+        <div class="heading">
+          <button
+            type="button"
+            class="btn btn-ghost mini"
+            [attr.aria-pressed]="store.tag() !== null"
+            [attr.aria-label]="
+              store.tag() ? 'Tags (filtering by #' + store.tag() + ')' : 'Show tags'
+            "
+            [appTooltip]="store.tag() ? 'Tag: #' + store.tag() : 'Tags'"
+            tooltipSide="right"
+            (click)="toggleCollapsed()"
+          >
+            <app-icon name="tag" [size]="16" />
+          </button>
+        </div>
+      } @else {
+        <div class="heading"><h2 id="tags-heading">Tags</h2></div>
+        <ul class="tags" role="list" aria-labelledby="tags-heading">
+          @for (entry of store.tagEntries(); track entry.tag) {
+            <li>
+              <button
+                type="button"
+                class="tag"
+                [attr.aria-pressed]="store.tag() === entry.tag"
+                (click)="selectTag(entry.tag)"
+                appClipTooltip
+                clipTarget=".tag-text"
+              >
+                <span class="tag-text">#{{ entry.tag }}</span>
+                <span class="tag-count">{{ entry.count }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </nav>
+
+  <div class="foot">
+    <div class="status-block">
+      <!-- Visual only: save errors are announced once, by the editor's alert region. -->
+      <span
+        class="status"
+        [class.error]="store.saveState() === 'error'"
+        [appTooltip]="rail() ? statusDetail() : ''"
+        tooltipSide="right"
+      >
+        <app-icon [name]="store.saveState() === 'error' ? 'alert' : 'checkCircle'" [size]="15" />
+        <span class="status-text">{{ status() }}</span>
+      </span>
+      @if (!rail()) {
+        <a routerLink="/privacy" class="privacy-link">Privacy policy</a>
+      }
+    </div>
+    <div class="theme" appMenu #themeMenu="appMenu">
+      <button
+        type="button"
+        class="btn btn-ghost theme-btn"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="themeMenu.open()"
+        [attr.aria-label]="'Theme: ' + theme.preference()"
+        [appTooltip]="'Theme: ' + theme.preference()"
+        [tooltipSide]="rail() ? 'right' : 'top'"
+        (click)="themeMenu.toggle()"
+      >
+        <app-icon name="theme" [size]="17" />
+        <app-icon class="chev" name="chevronDown" [size]="13" [stroke]="2.4" />
+      </button>
+      @if (themeMenu.open()) {
+        <div class="menu theme-menu" role="menu" aria-label="Theme">
+          @for (option of themeOptions; track option.value) {
+            <button
+              type="button"
+              role="menuitemradio"
+              class="menu-item"
+              [attr.aria-checked]="theme.preference() === option.value"
+              (click)="setTheme(option.value, themeMenu)"
+            >
+              <app-icon [name]="option.icon" [size]="17" />
+              <span class="grow">{{ option.label }}</span>
+              @if (theme.preference() === option.value) {
+                <app-icon name="check" [size]="16" />
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+    <a
+      routerLink="/app/settings"
+      class="btn btn-ghost btn-icon"
+      aria-label="Settings"
+      appTooltip="Settings"
+      [tooltipSide]="rail() ? 'right' : 'top'"
+    >
+      <app-icon name="settings" />
+    </a>
+  </div>
+</aside>

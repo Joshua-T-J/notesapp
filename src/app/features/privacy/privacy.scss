@@ -1,0 +1,137 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 56px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+  outline: none;
+}
+
+.toc {
+  flex: 0 0 220px;
+  font-size: 14px;
+}
+
+.toc-title {
+  margin: 0 0 10px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.toc ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition:
+    background-color 0.15s var(--ease),
+    color 0.15s var(--ease);
+}
+
+.toc a::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  transition: background-color 0.15s var(--ease);
+}
+
+.toc a:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.toc a.active {
+  background: var(--surface-2);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.toc a.active::before {
+  background: var(--accent);
+}
+
+@media (min-width: 900px) {
+  .toc {
+    align-self: flex-start;
+    position: sticky;
+    top: 24px;
+  }
+}
+
+@media (max-width: 899px) {
+  .toc {
+    flex-basis: 100%;
+  }
+
+  .toc ul {
+    flex-flow: row wrap;
+  }
+}
+
+.prose {
+  flex: 999 1 560px;
+  min-width: 0;
+  max-width: 700px;
+  color: var(--ink-2);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+h1 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: clamp(34px, 5vw, 44px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.effective {
+  margin: 0 0 40px;
+  color: var(--ink-3);
+  font-size: 15px;
+}
+
+h2 {
+  margin: 36px 0 10px;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 600;
+  scroll-margin-top: 24px;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+ul {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+
+a {
+  color: var(--ink);
+}

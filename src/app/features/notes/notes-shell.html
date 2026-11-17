@@ -1,0 +1,39 @@
+<div
+  class="shell"
+  [class.has-note]="hasNote()"
+  [class.drawer-open]="drawerOpen()"
+  [class.rail]="rail()"
+>
+  <div
+    #drawerPanel
+    class="side"
+    [attr.role]="drawerOpen() ? 'dialog' : null"
+    [attr.aria-modal]="drawerOpen() ? 'true' : null"
+    [attr.aria-label]="drawerOpen() ? 'Library' : null"
+  >
+    <app-library-sidebar
+      [rail]="rail()"
+      (newNote)="newNote()"
+      (navigated)="closeDrawer()"
+      (closeDrawer)="closeDrawer()"
+    />
+  </div>
+  @if (drawerOpen()) {
+    <button
+      type="button"
+      class="scrim"
+      aria-label="Close menu"
+      tabindex="-1"
+      (click)="closeDrawer()"
+    ></button>
+  }
+
+  <!-- One <main> holds the list and the editor, so a main landmark exists at every width.
+       While the drawer is open it behaves as a modal: the rest of the page is inert. -->
+  <main id="main" class="main" tabindex="-1" [attr.inert]="drawerOpen() ? '' : null">
+    <app-note-list class="list" (openDrawer)="openDrawer()" (newNote)="newNote()" />
+    <section class="editor" aria-label="Note">
+      <router-outlet />
+    </section>
+  </main>
+</div>

@@ -1,0 +1,163 @@
+<section class="pane" aria-labelledby="list-title">
+  <header class="head">
+    <div class="row">
+      <button
+        type="button"
+        class="btn btn-ghost btn-icon drawer-btn"
+        aria-label="Open library"
+        (click)="openDrawer.emit()"
+      >
+        <app-icon name="menu" />
+      </button>
+      <h1 id="list-title" class="title">{{ store.viewTitle() }}</h1>
+      <button
+        type="button"
+        class="btn btn-ghost btn-icon"
+        [attr.aria-pressed]="settings.settings().hidePreviews"
+        [attr.aria-label]="settings.settings().hidePreviews ? 'Show previews' : 'Hide previews'"
+        [appTooltip]="settings.settings().hidePreviews ? 'Show previews' : 'Hide previews'"
+        (click)="togglePreviews()"
+      >
+        <app-icon [name]="settings.settings().hidePreviews ? 'eyeOff' : 'eye'" />
+      </button>
+      <div class="sort" appMenu #sortMenu="appMenu">
+        <button
+          type="button"
+          class="btn btn-ghost btn-icon"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="sortMenu.open()"
+          [attr.aria-label]="'Sort: ' + sortLabel()"
+          [appTooltip]="'Sort: ' + sortLabel()"
+          (click)="sortMenu.toggle()"
+        >
+          <app-icon name="sort" />
+        </button>
+        @if (sortMenu.open()) {
+          <div class="menu sort-menu" role="menu" aria-label="Sort notes">
+            @for (option of sortOptions; track option[0]) {
+              <button
+                type="button"
+                role="menuitemradio"
+                class="menu-item"
+                [attr.aria-checked]="store.sortBy() === option[0]"
+                (click)="setSort(option[0], sortMenu)"
+              >
+                <span class="grow">{{ option[1] }}</span>
+                @if (store.sortBy() === option[0]) {
+                  <app-icon name="check" [size]="16" />
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+      @if (!store.isTrashView()) {
+        <button
+          type="button"
+          class="btn btn-primary btn-icon new-btn"
+          aria-label="New note"
+          appTooltip="New note (N)"
+          (click)="newNote.emit()"
+        >
+          <app-icon name="plus" />
+        </button>
+      }
+    </div>
+
+    <div class="field">
+      <app-icon name="search" [size]="16" />
+      <label class="visually-hidden" for="note-search">Search notes</label>
+      <input
+        #search
+        id="note-search"
+        type="search"
+        placeholder="Search"
+        autocomplete="off"
+        [value]="store.search()"
+        (input)="store.search.set(search.value)"
+        (keydown.escape)="$event.stopPropagation(); clearSearch(search)"
+      />
+    </div>
+
+    @if (store.tag(); as tag) {
+      <div class="filter">
+        <span
+          >Tagged <strong>#{{ tag }}</strong></span
+        >
+        <button type="button" class="btn btn-ghost chip" (click)="store.tag.set(null)">
+          Clear <span class="visually-hidden">tag filter</span>
+        </button>
+      </div>
+    }
+    @if (store.isTrashView() && store.counts().trash > 0) {
+      <div class="filter">
+        <span>Notes in Trash can be restored.</span>
+        <button type="button" class="btn btn-danger chip" (click)="emptyTrash()">
+          Empty Trash
+        </button>
+      </div>
+    }
+  </header>
+
+  <div class="scroll">
+    @if (!store.loaded()) {
+      <p class="empty" role="status">Loading notes…</p>
+    } @else {
+      <ul class="notes" role="list" [attr.aria-label]="store.viewTitle()">
+        @for (row of rows(); track row.id) {
+          @if (row.groupStart) {
+            <li class="group" aria-hidden="true">{{ row.groupStart }}</li>
+          }
+          <li>
+            <a
+              class="note"
+              [routerLink]="['/app/note', row.id]"
+              [attr.aria-current]="store.openNoteId() === row.id ? 'page' : null"
+              appClipTooltip
+              clipTarget=".name, .preview, .folder"
+            >
+              <span class="line">
+                <span class="name">{{ row.title }}</span>
+                @if (row.pinned || row.locked) {
+                  <!-- Fixed slots (lock, then pin) so icons line up from row to row. -->
+                  <span class="flags">
+                    <span class="flag">
+                      @if (row.locked) {
+                        <app-icon class="lock" name="lock" [size]="14" />
+                      }
+                    </span>
+                    <span class="flag">
+                      @if (row.pinned) {
+                        <app-icon class="pin" name="pin" [size]="14" />
+                        <span class="visually-hidden">, pinned</span>
+                      }
+                    </span>
+                  </span>
+                }
+              </span>
+              <span class="preview" [class.muted]="row.previewMuted">{{ row.preview }}</span>
+              <span class="meta">
+                <span>{{ row.date }}</span>
+                @if (row.folder; as f) {
+                  <span aria-hidden="true">·</span>
+                  <span class="dot" [style.background]="'var(--folder-' + f.color + ')'"></span>
+                  <span class="folder">{{ f.name }}</span>
+                }
+              </span>
+            </a>
+          </li>
+        } @empty {
+          <li class="empty">
+            <p>{{ emptyText() }}</p>
+            @if (!store.isTrashView() && !store.search()) {
+              <button type="button" class="btn btn-secondary" (click)="newNote.emit()">
+                <app-icon name="plus" [size]="16" /> New note
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+  <p class="visually-hidden" role="status">{{ rows().length }} notes</p>
+</section>

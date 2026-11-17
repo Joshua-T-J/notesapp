@@ -1,14 +1,19 @@
 {
-  "name": "notes-app",
-  "version": "0.0.0",
+  "name": "nota",
+  "version": "2.0.0",
+  "private": true,
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "npm run check:security && ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "npm run check:security && ng test --watch=false",
+    "check:security": "node scripts/check-security.mjs",
+    "format": "prettier --write \"src/**/*.{ts,html,scss}\" \"scripts/**/*.mjs\""
   },
-  "private": true,
+  "engines": {
+    "node": ">=22.12"
+  },
   "packageManager": "npm@11.21.0",
   "dependencies": {
     "@angular/common": "^22.2.0",
@@ -16,11 +21,14 @@
     "@angular/core": "^22.2.0",
     "@angular/forms": "^22.2.0",
     "@angular/platform-browser": "^22.2.0",
+    "@angular/platform-server": "^22.2.0",
     "@angular/router": "^22.2.0",
-    "bootstrap": "^5.3.8",
-    "bootstrap-icons": "^1.13.2",
+    "@angular/ssr": "^22.2.3",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource-variable/schibsted-grotesk": "^5.3.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zod": "^4.1.0"
   },
   "devDependencies": {
     "@angular/build": "^22.2.3",

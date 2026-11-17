@@ -1,0 +1,69 @@
+<app-site-header />
+
+<main id="main" tabindex="-1">
+  <section class="hero wrap">
+    <div class="copy">
+      <h1>A plain notebook that stays on your device.</h1>
+      <p class="lede">
+        Nota saves your notes in this browser. No account, no tracking, no ads. Write, tick things
+        off, and export any note as Markdown when you need it somewhere else.
+      </p>
+    </div>
+    <div class="ctas">
+      <a routerLink="/app" class="btn btn-primary btn-lg">Start writing</a>
+      <a routerLink="/privacy" class="btn btn-secondary btn-lg">How your data is handled</a>
+    </div>
+  </section>
+
+  <section class="preview wrap-wide" aria-label="Screenshot of the Nota app">
+    <div class="frame">
+      <img
+        class="shot light"
+        ngSrc="/images/app-light.webp"
+        width="1440"
+        height="900"
+        priority
+        alt="Nota with a note open: a library on the left, a list of notes, and a note with a checklist."
+      />
+      <img class="shot dark" ngSrc="/images/app-dark.webp" width="1440" height="900" alt="" />
+    </div>
+  </section>
+
+  <section class="points wrap" aria-label="What Nota does">
+    <div>
+      <h2>Kept on your device</h2>
+      <p>
+        Notes are stored in your browser’s local storage. Nothing is sent to a server, and there are
+        no analytics scripts.
+      </p>
+    </div>
+    <div>
+      <h2>Just writing</h2>
+      <p>
+        A title, your text, and a few tools: headings, bold, lists and checklists. No syntax to
+        learn and no preview pane.
+      </p>
+    </div>
+    <div>
+      <h2>Easy to take with you</h2>
+      <p>
+        Export one note as Markdown or plain text, or download everything at once from Settings.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap roadmap-wrap">
+    <div class="roadmap">
+      <div>
+        <h2>Sync is on the roadmap</h2>
+        <p>
+          An optional account to sync between devices is planned. Using Nota without an account,
+          with everything kept locally, will stay available.
+        </p>
+      </div>
+      <span class="muted">Not available yet</span>
+    </div>
+  </section>
+</main>
+
+<app-site-footer />

@@ -1,0 +1,93 @@
+<app-site-header />
+
+<main id="main" class="wrap" tabindex="-1">
+  <nav class="toc" aria-label="On this page">
+    <p class="toc-title">On this page</p>
+    <ul role="list">
+      @for (s of sections; track s.id) {
+        <li>
+          <a
+            [routerLink]="[]"
+            [fragment]="s.id"
+            [class.active]="active() === s.id"
+            [attr.aria-current]="active() === s.id ? 'location' : null"
+            (click)="select(s.id)"
+          >
+            {{ s.label }}
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <article class="prose">
+    <h1>Privacy policy</h1>
+    <p class="effective">
+      Effective {{ site.privacyEffective }} · Applies to the Nota website and app
+    </p>
+
+    <h2 id="summary">Summary</h2>
+    <p>
+      Your notes are saved in your own browser and are never sent to us. Nota has no accounts, no
+      cookies, no analytics and no advertising.
+    </p>
+
+    <h2 id="stored">What is stored, and where</h2>
+    <p>Nota keeps everything in your own browser:</p>
+    <ul>
+      <li>your notes, folders and tags, in local storage;</li>
+      <li>images you add to notes, in IndexedDB (the browser’s storage for larger files);</li>
+      <li>your settings, such as theme and whether previews are hidden.</li>
+    </ul>
+    <p>
+      Images are resized and re-saved when you add them, which also removes hidden details such as
+      camera location. This data stays on the device and browser profile where you created it. We
+      cannot see it, recover it or delete it for you.
+    </p>
+
+    <h2 id="not-collected">What is not collected</h2>
+    <p>
+      We do not use cookies, analytics, tracking pixels or third-party scripts. Fonts are served
+      from our own domain, so no font provider sees your visit.
+    </p>
+
+    <h2 id="hosting">Hosting</h2>
+    <p>
+      The site is hosted by {{ site.host }}. Like any web host, it may record standard request logs,
+      such as IP address, browser type and the page requested, to keep the service running and
+      secure. These logs never contain your notes. They are handled under
+      <a [href]="site.hostPrivacyUrl" rel="noopener noreferrer">{{ site.host }}’s privacy policy</a
+      >.
+    </p>
+
+    <h2 id="locked">Locked notes</h2>
+    <p>
+      Locking a note hides its text on screen until you choose to show it. It does not encrypt the
+      note. Anyone who can use your browser profile could still read it, so do not rely on locking
+      for passwords or other secrets.
+    </p>
+
+    <h2 id="your-data">Exporting and deleting your data</h2>
+    <p>
+      You can export any note as Markdown or plain text, or download all notes from Settings. To
+      delete everything, including images, use Settings › Delete all data, or clear this site’s data
+      in your browser. Clearing browser data removes your notes permanently, so export first if you
+      want to keep them.
+    </p>
+
+    <h2 id="sync">Future sync</h2>
+    <p>
+      We plan to offer an optional account for syncing notes between devices. If we do, we will
+      update this policy before it launches, explain what is stored on our servers, and only sync
+      notes for people who sign up. Using Nota without an account will remain possible.
+    </p>
+
+    <h2 id="changes">Changes and contact</h2>
+    <p>If this policy changes, we will update the date at the top of this page.</p>
+    <p>
+      Questions: <a [href]="'mailto:' + site.contactEmail">{{ site.contactEmail }}</a>
+    </p>
+  </article>
+</main>
+
+<app-site-footer />

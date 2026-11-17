@@ -1,0 +1,114 @@
+<div
+  #root
+  class="editor keyboard-focus-ring"
+  role="textbox"
+  aria-multiline="true"
+  [attr.aria-label]="label()"
+  [attr.aria-readonly]="isReadonly()"
+  [attr.contenteditable]="isReadonly() ? 'false' : 'true'"
+  [attr.data-empty]="empty()"
+  spellcheck="true"
+  (beforeinput)="onBeforeInput($event)"
+  (input)="onInput()"
+  (keydown)="onKeydown($event); onFigureKeydown($event)"
+  (mousedown)="onMousedown($event)"
+  (click)="onClick($event)"
+  (paste)="onPaste($event)"
+  (dragover)="$event.preventDefault()"
+  (drop)="onDrop($event)"
+></div>
+
+<input
+  #fileInput
+  type="file"
+  accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/bmp"
+  multiple
+  class="visually-hidden"
+  tabindex="-1"
+  aria-hidden="true"
+  (change)="onFilesPicked(fileInput)"
+/>
+
+<span class="visually-hidden" aria-live="polite">{{ announcement() }}</span>
+
+@if (linkPop(); as pop) {
+  <div
+    class="pop"
+    role="dialog"
+    aria-labelledby="link-dialog-label"
+    [style.top.px]="pop.top"
+    [style.left.px]="pop.left"
+  >
+    <form
+      class="pop-form"
+      (submit)="$event.preventDefault(); applyLink(linkInput.value)"
+      (keydown.escape)="$event.stopPropagation(); closeLink()"
+    >
+      <label id="link-dialog-label" for="link-input">Link address</label>
+      <input
+        #linkInput
+        id="link-input"
+        class="text-input"
+        type="text"
+        inputmode="url"
+        autocomplete="off"
+        placeholder="https://example.com"
+        [value]="pop.href"
+        [attr.aria-invalid]="linkError() ? 'true' : null"
+        [attr.aria-describedby]="linkError() ? 'link-error' : 'link-hint'"
+        (input)="linkError.set('')"
+      />
+      @if (linkError(); as error) {
+        <p id="link-error" class="error" role="alert">{{ error }}</p>
+      } @else {
+        <p id="link-hint" class="hint">Ctrl/⌘ + click a link in the note to open it.</p>
+      }
+      <div class="actions">
+        @if (pop.editing) {
+          <button type="button" class="btn btn-danger small" (click)="removeLink()">
+            Remove link
+          </button>
+        }
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-ghost small" (click)="closeLink()">Cancel</button>
+        <button type="submit" class="btn btn-primary small">
+          {{ pop.editing ? 'Update' : 'Add link' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (altPop(); as pop) {
+  <div
+    class="pop"
+    role="dialog"
+    aria-labelledby="alt-dialog-label"
+    [style.top.px]="pop.top"
+    [style.left.px]="pop.left"
+  >
+    <form
+      class="pop-form"
+      (submit)="$event.preventDefault(); saveAlt(altInput.value)"
+      (keydown.escape)="$event.stopPropagation(); closeAlt()"
+    >
+      <label id="alt-dialog-label" for="alt-input">Image description</label>
+      <textarea
+        #altInput
+        id="alt-input"
+        class="text-input"
+        maxlength="1000"
+        aria-describedby="alt-hint"
+        [value]="pop.alt"
+      ></textarea>
+      <p id="alt-hint" class="hint">
+        Describe what the image shows for people who can’t see it. Leave empty if it is only
+        decorative.
+      </p>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost small" (click)="closeAlt()">Skip</button>
+        <button type="submit" class="btn btn-primary small">Save</button>
+      </div>
+    </form>
+  </div>
+}
