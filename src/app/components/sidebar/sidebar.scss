@@ -1,0 +1,84 @@
+:host {
+  display: contents;
+}
+
+.folder-row {
+  position: relative;
+}
+
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.color-picker-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover {
+    transform: scale(1.12);
+  }
+
+  &.selected {
+    box-shadow: 0 0 0 2px var(--bg-sidebar), 0 0 0 4px var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+// "Auto" shows the whole palette, since the color is chosen for you.
+.swatch-auto {
+  background: conic-gradient(#0d9488, #6366f1, #f59e0b, #e11d48, #0ea5e9, #0d9488);
+}
+
+.folder-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 9px;
+  flex-shrink: 0;
+}
+
+// Delete button sits over the row, just left of the count badge, and appears on hover/focus.
+.folder-del {
+  position: absolute;
+  right: 44px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 2px 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.folder-row:hover .folder-del,
+.folder-row:focus-within .folder-del {
+  opacity: 1;
+}
+
+.folder-del:hover,
+.folder-del:focus-visible {
+  color: var(--danger);
+  background: rgba(225, 29, 72, 0.12);
+}

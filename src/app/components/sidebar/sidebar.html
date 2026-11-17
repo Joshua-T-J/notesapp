@@ -1,118 +1,178 @@
-<!-- ======================================================================
-         PANE 1: LEFT COLLAPSIBLE SIDEBAR (OPTIONAL FOLDERS, UNFILED, TAGS)
-         ====================================================================== -->
-<aside class="pane-sidebar">
-    <!-- Brand Header -->
-    <div class="d-flex align-items-center justify-content-between px-3 py-3 border-bottom" style="border-color: var(--border-color) !important;">
-        <div class="d-flex align-items-center gap-2">
-            <div class="brand-logo">
-                <i class="bi bi-journal-check"></i>
-            </div>
-            <div>
-                <div class="fw-bold" style="font-size: 0.98rem; letter-spacing: -0.02em;">Nota</div>
-                <div style="font-size: 0.68rem; color: var(--text-muted);">Lively & Privacy-First</div>
-            </div>
-        </div>
-        <button class="icon-btn" id="collapseSidebarBtn" (click)="toggleSidebar.emit(false)" title="Collapse Sidebar">
-            <i class="bi bi-layout-sidebar"></i>
-        </button>
+<aside class="pane-sidebar" [attr.inert]="store.sidebarOpen() ? null : ''" aria-label="Notes navigation">
+  <!-- Brand header -->
+  <div class="d-flex align-items-center justify-content-between px-3 py-3 border-bottom" style="border-color: var(--border-color) !important;">
+    <div class="d-flex align-items-center gap-2">
+      <div class="brand-logo">
+        <i class="bi bi-journal-check" aria-hidden="true"></i>
+      </div>
+      <div>
+        <div class="fw-bold" style="font-size: 0.98rem; letter-spacing: -0.02em;">Nota</div>
+        <div style="font-size: 0.68rem; color: var(--text-secondary);">Lively &amp; Privacy-First</div>
+      </div>
+    </div>
+    <button type="button" class="icon-btn" (click)="store.setSidebarOpen(false)" title="Collapse Sidebar" aria-label="Collapse sidebar">
+      <i class="bi bi-layout-sidebar" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <!-- New note (unfiled by default, or into the folder being browsed) -->
+  <div class="p-3 pb-2">
+    <button type="button" class="btn-accent w-100" (click)="store.createNote()">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      <span>New Note</span>
+    </button>
+  </div>
+
+  <nav class="flex-grow-1 overflow-y-auto px-2 pb-3" aria-label="Views, folders and tags">
+    <!-- Quick views -->
+    <div class="section-header">
+      <span>Quick Views</span>
+    </div>
+    @for (item of quickViews; track item.view) {
+    <button
+      type="button"
+      class="nav-item-btn"
+      [class.active]="store.activeView() === item.view"
+      [attr.aria-current]="store.activeView() === item.view ? 'page' : null"
+      (click)="store.setView(item.view)">
+      <span class="d-flex align-items-center gap-2">
+        <i class="bi" [class]="item.icon" [style.color]="item.iconColor" aria-hidden="true"></i>
+        <span>{{ item.label }}</span>
+      </span>
+      <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);">{{ store.counts()[item.view] }}</span>
+    </button>
+    }
+
+    <!-- Folders (optional) -->
+    <div class="section-header mt-2">
+      <span>Folders (Optional)</span>
+      <button
+        type="button"
+        class="icon-btn p-0 px-1"
+        (click)="toggleFolderForm()"
+        [attr.aria-expanded]="showFolderForm()"
+        title="Add New Folder"
+        aria-label="Add new folder">
+        <i class="bi bi-folder-plus" style="font-size: 0.85rem; color: var(--accent);" aria-hidden="true"></i>
+      </button>
     </div>
 
-    <!-- Primary Sidebar New Note Action (Creates Unfiled Note by default unless inside a folder) -->
-    <div class="p-3 pb-2">
-        <button class="btn-accent w-100" id="sidebarNewNoteBtn">
-            <i class="bi bi-plus-lg"></i>
-            <span>New Note</span>
-        </button>
+    <div class="px-2 mb-2" [class.d-none]="!showFolderForm()">
+      <div class="d-flex align-items-center gap-1">
+        <input
+          #folderInput
+          type="text"
+          class="minimal-select flex-grow-1"
+          placeholder="Folder name..."
+          aria-label="New folder name"
+          style="font-size: 0.78rem; padding: 0.3rem 0.55rem;"
+          (keydown.enter)="addFolder(folderInput)" />
+        <button type="button" class="btn-accent py-1 px-2" style="font-size: 0.75rem;" (click)="addFolder(folderInput)">Add</button>
+      </div>
+      <div class="color-picker" role="radiogroup" aria-label="Folder color">
+        <span class="color-picker-label">Color</span>
+        <button
+          type="button"
+          role="radio"
+          class="swatch swatch-auto"
+          [class.selected]="newFolderColor() === null"
+          [attr.aria-checked]="newFolderColor() === null"
+          title="Auto (default) — picks the next color automatically"
+          aria-label="Auto color (default)"
+          (click)="newFolderColor.set(null)"></button>
+        @for (color of colorOptions; track color.key) {
+        <button
+          type="button"
+          role="radio"
+          class="swatch"
+          [style.background-color]="color.hex"
+          [class.selected]="newFolderColor() === color.key"
+          [attr.aria-checked]="newFolderColor() === color.key"
+          [title]="color.label"
+          [attr.aria-label]="color.label"
+          (click)="newFolderColor.set(color.key)"></button>
+        }
+      </div>
     </div>
 
-    <!-- Scrollable Sidebar Navigation Body: Quick Views, Optional Folders & Tags -->
-    <div class="flex-grow-1 overflow-y-auto px-2 pb-3">
-        <div class="section-header">
-            <span>Quick Views</span>
-        </div>
-        <div id="quickViewsNav">
-            <button class="nav-item-btn active" data-view="all">
-                <span class="d-flex align-items-center gap-2">
-                    <i class="bi bi-grid-1x2"></i>
-                    <span>All Notes</span>
-                </span>
-                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countAll">0</span>
-            </button>
-            <button class="nav-item-btn" data-view="unfiled">
-                <span class="d-flex align-items-center gap-2">
-                    <i class="bi bi-file-earmark-text"></i>
-                    <span>Unfiled Notes</span>
-                </span>
-                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countUnfiled">0</span>
-            </button>
-            <button class="nav-item-btn" data-view="pinned">
-                <span class="d-flex align-items-center gap-2">
-                    <i class="bi bi-pin-angle" style="color: var(--warm-highlight);"></i>
-                    <span>Pinned</span>
-                </span>
-                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countPinned">0</span>
-            </button>
-            <button class="nav-item-btn" data-view="sensitive">
-                <span class="d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-lock" style="color: var(--accent);"></i>
-                    <span>Sensitive Vault</span>
-                </span>
-                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countSensitive">0</span>
-            </button>
-            <button class="nav-item-btn" data-view="trash">
-                <span class="d-flex align-items-center gap-2">
-                    <i class="bi bi-trash3"></i>
-                    <span>Trash</span>
-                </span>
-                <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);" id="countTrash">0</span>
-            </button>
-        </div>
-
-        <!-- Optional Custom Folders Section -->
-        <div class="section-header mt-2">
-            <span>Folders (Optional)</span>
-            <button class="icon-btn p-0 px-1" id="toggleNewFolderBtn" title="Add New Folder">
-                <i class="bi bi-folder-plus" style="font-size: 0.85rem; color: var(--accent);"></i>
-            </button>
-        </div>
-
-        <!-- Inline New Folder Input Form -->
-        <div id="newFolderForm" class="px-2 mb-2 d-none">
-            <div class="d-flex align-items-center gap-1">
-                <input type="text" id="newFolderInput" class="minimal-select flex-grow-1" placeholder="Folder name..." style="font-size: 0.78rem; padding: 0.3rem 0.55rem;">
-                <button class="btn-accent py-1 px-2" id="saveFolderBtn" style="font-size: 0.75rem;">Add</button>
-            </div>
-        </div>
-
-        <div id="foldersNavList"></div>
-
-        <!-- Tags Filter Section -->
-        <div class="section-header mt-2">
-            <span>Tags</span>
-            <button class="icon-btn p-0 px-1 d-none" id="clearTagFilterBtn" title="Clear Tag Filter" style="font-size: 0.68rem; color: var(--accent);">
-                Clear
-            </button>
-        </div>
-        <div id="tagsFilterContainer" class="px-2 d-flex flex-wrap gap-1"></div>
+    @for (folder of store.folderEntries(); track folder.name) {
+    <div class="folder-row">
+      <button
+        type="button"
+        class="nav-item-btn"
+        [class.active]="store.activeView() === folder.view"
+        [attr.aria-current]="store.activeView() === folder.view ? 'page' : null"
+        (click)="store.setView(folder.view)">
+        <span class="text-truncate d-flex align-items-center">
+          <span class="folder-dot" [style.background-color]="folder.tone.hex" aria-hidden="true"></span>
+          <span class="text-truncate">{{ folder.name }}</span>
+        </span>
+        <span class="badge rounded-pill" style="background: var(--bg-surface); color: var(--text-secondary);">{{ folder.count }}</span>
+      </button>
+      <button
+        type="button"
+        class="folder-del"
+        (click)="store.requestDeleteFolder(folder.name)"
+        title="Delete Folder (Moves notes safely to Unfiled)"
+        [attr.aria-label]="'Delete folder ' + folder.name + ' (notes move to Unfiled)'">
+        <i class="bi bi-x-lg" style="font-size: 0.68rem;" aria-hidden="true"></i>
+      </button>
     </div>
+    } @empty {
+    <div class="px-3 py-1" style="font-size: 0.74rem; color: var(--text-secondary);">No folders — all notes are unfiled</div>
+    }
 
-    <!-- Sidebar Footer: Reference Blueprint & Lively 3-Theme Switcher -->
-    <div class="p-3 border-top" style="border-color: var(--border-color) !important;">
-        <button class="w-100 mb-2 icon-btn justify-content-center border" style="border-color: var(--border-color) !important; background: var(--bg-card); padding: 0.46rem;" data-bs-toggle="modal" data-bs-target="#referenceModal">
-            <i class="bi bi-easel2" style="color: var(--accent);"></i>
-            <span class="fw-medium" style="font-size: 0.77rem;">UI Reference Blueprint</span>
-        </button>
-
-        <div class="d-flex align-items-center justify-content-between gap-1 p-1 rounded-3" style="background: var(--bg-surface);">
-            @for (item of themes; track $index) {
-            <button class="icon-btn flex-grow-1 justify-content-center py-1 theme-btn active"
-                [class.active]="currentTheme() === item.value"
-                (click)="setTheme(item.value)" [attr.data-theme-val]="item.value" [title]="item.label">
-                <i [class]="item.iconClass"></i>
-                <span style="font-size: 0.72rem;">{{ item.displayName }}</span>
-            </button>
-            }
-        </div>
+    <!-- Tags -->
+    <div class="section-header mt-2">
+      <span>Tags</span>
+      @if (store.activeTag()) {
+      <button type="button" class="icon-btn p-0 px-1" style="font-size: 0.68rem; color: var(--accent);" (click)="store.clearTag()" title="Clear Tag Filter">
+        Clear
+      </button>
+      }
     </div>
+    <div class="px-2 d-flex flex-wrap gap-1">
+      @for (entry of store.tagEntries(); track entry.tag) {
+      <button
+        type="button"
+        class="tag-filter-pill"
+        [class.active]="store.activeTag() === entry.tag"
+        [attr.aria-pressed]="store.activeTag() === entry.tag"
+        (click)="store.toggleTag(entry.tag)">
+        #{{ entry.tag }} <span style="opacity: 0.65; font-size: 0.68rem;">{{ entry.count }}</span>
+      </button>
+      } @empty {
+      <span style="font-size: 0.75rem; color: var(--text-secondary);">No tags yet</span>
+      }
+    </div>
+  </nav>
+
+  <!-- Footer: reference blueprint + theme switcher -->
+  <div class="p-3 border-top" style="border-color: var(--border-color) !important;">
+    <!-- <button
+      type="button"
+      class="w-100 mb-2 icon-btn justify-content-center border"
+      style="border-color: var(--border-color) !important; background: var(--bg-card); padding: 0.46rem;"
+      data-bs-toggle="modal"
+      data-bs-target="#referenceModal"
+    >
+      <i class="bi bi-easel2" style="color: var(--accent);" aria-hidden="true"></i>
+      <span class="fw-medium" style="font-size: 0.77rem;">UI Reference Blueprint</span>
+    </button> -->
+
+    <div class="d-flex align-items-center justify-content-between gap-1 p-1 rounded-3" style="background: var(--bg-surface);" role="group" aria-label="Theme">
+      @for (item of themeService.themes; track item.value) {
+      <button
+        type="button"
+        class="icon-btn flex-grow-1 justify-content-center py-1"
+        [class.active]="themeService.theme() === item.value"
+        [attr.aria-pressed]="themeService.theme() === item.value"
+        [title]="item.label"
+        (click)="themeService.setTheme(item.value)">
+        <i [class]="item.iconClass" aria-hidden="true"></i>
+        <span style="font-size: 0.72rem;">{{ item.displayName }}</span>
+      </button>
+      }
+    </div>
+  </div>
 </aside>

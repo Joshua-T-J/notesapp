@@ -1,0 +1,243 @@
+<section
+  class="detail-studio-view"
+  [class.open]="isOpen()"
+  [attr.inert]="isOpen() ? null : ''"
+  aria-label="Note editor"
+>
+  @if (note(); as n) {
+    <!-- Top toolbar -->
+    <div class="studio-toolbar">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          class="icon-btn fw-semibold border px-3 py-1"
+          style="border-color: var(--border-color) !important; background: var(--bg-main);"
+          (click)="store.closeStudio()"
+        >
+          <i class="bi bi-arrow-left" style="color: var(--accent);" aria-hidden="true"></i>
+          <span>Back to Cards</span>
+          <span class="badge ms-1" style="background: var(--bg-surface); color: var(--text-secondary); font-size: 0.65rem;">ESC</span>
+        </button>
+
+        <div class="vr mx-1" style="color: var(--border-color);"></div>
+
+        <button
+          type="button"
+          class="icon-btn"
+          [class.active]="n.pinned"
+          [attr.aria-pressed]="n.pinned"
+          (click)="store.togglePin(n.id)"
+          title="Pin / Unpin Note"
+          aria-label="Pin or unpin note"
+        >
+          <i [class]="n.pinned ? 'bi bi-pin-fill' : 'bi bi-pin-angle'" aria-hidden="true"></i>
+        </button>
+
+        <button
+          type="button"
+          class="icon-btn"
+          [class.active]="n.sensitive"
+          [attr.aria-pressed]="n.sensitive"
+          (click)="store.toggleSensitive(n.id)"
+          title="Toggle Sensitive / Protected Status"
+        >
+          <i [class]="n.sensitive ? 'bi bi-shield-lock-fill' : 'bi bi-shield-lock'" aria-hidden="true"></i>
+          <span class="d-none d-xl-inline" style="font-size: 0.75rem;">{{ n.sensitive ? 'Sensitive' : 'Standard' }}</span>
+        </button>
+
+        <div class="d-flex align-items-center gap-1">
+          <i class="bi bi-folder2" style="font-size: 0.82rem; color: var(--text-muted);" aria-hidden="true"></i>
+          <app-folder-select
+            label="Assign folder or keep unfiled"
+            [value]="n.folder"
+            (valueChange)="store.setFolder(n.id, $event)"
+          />
+        </div>
+
+        <!-- Tags -->
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+          @for (tag of n.tags; track tag) {
+            <span class="mini-tag d-inline-flex align-items-center gap-1">
+              #{{ tag }}
+              <button
+                type="button"
+                style="background: none; border: none; padding: 0; color: inherit; line-height: 1; cursor: pointer;"
+                (click)="store.removeTag(n.id, tag)"
+                [attr.aria-label]="'Remove tag ' + tag"
+              >
+                <i class="bi bi-x" aria-hidden="true"></i>
+              </button>
+            </span>
+          }
+        </div>
+        <input
+          #tagInput
+          type="text"
+          class="minimal-select"
+          placeholder="+ Add tag"
+          aria-label="Add tag (press Enter)"
+          title="Press Enter to add tag"
+          style="width: 96px; font-size: 0.74rem; padding: 0.2rem 0.5rem;"
+          (keydown.enter)="$event.preventDefault(); addTag(tagInput, n.id)"
+        />
+      </div>
+
+      <div class="d-flex align-items-center gap-1">
+        <div class="d-inline-flex p-1 rounded-3 me-1" style="background: var(--bg-main);" role="group" aria-label="Editor mode">
+          @for (option of modes; track option.mode) {
+            <button
+              type="button"
+              class="icon-btn py-1 px-2"
+              [class.active]="store.editorMode() === option.mode"
+              [attr.aria-pressed]="store.editorMode() === option.mode"
+              [title]="option.title"
+              (click)="store.setEditorMode(option.mode)"
+            >
+              <i class="bi" [class]="option.icon" aria-hidden="true"></i>
+              <span class="d-none d-md-inline" style="font-size: 0.75rem;">{{ option.label }}</span>
+            </button>
+          }
+        </div>
+
+        <button
+          type="button"
+          class="icon-btn"
+          [class.active]="store.focusMode()"
+          [attr.aria-pressed]="store.focusMode()"
+          (click)="store.toggleFocusMode()"
+          title="Toggle Distraction-Free Focus Mode"
+          aria-label="Toggle focus mode"
+        >
+          <i [class]="store.focusMode() ? 'bi bi-arrows-angle-contract' : 'bi bi-arrows-angle-expand'" aria-hidden="true"></i>
+        </button>
+
+        <div class="dropdown">
+          <button type="button" class="icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Export Note" aria-label="Export note">
+            <i class="bi bi-download" aria-hidden="true"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li>
+              <button type="button" class="dropdown-item" (click)="exportNote('md')">
+                <i class="bi bi-markdown me-2" style="color: var(--accent);" aria-hidden="true"></i>Export as Markdown (.md)
+              </button>
+            </li>
+            <li>
+              <button type="button" class="dropdown-item" (click)="exportNote('txt')">
+                <i class="bi bi-file-earmark-text me-2" aria-hidden="true"></i>Export as Plain Text (.txt)
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        @if (n.trashed) {
+          <button type="button" class="icon-btn" style="color: var(--accent);" (click)="store.restoreNote(n.id)" title="Restore Note from Trash">
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+            <span style="font-size: 0.75rem;">Restore</span>
+          </button>
+        }
+
+        <button
+          type="button"
+          class="icon-btn"
+          style="color: var(--danger);"
+          (click)="store.requestDeleteNote(n.id)"
+          [title]="n.trashed ? 'Delete Permanently' : 'Move to Trash'"
+          [attr.aria-label]="n.trashed ? 'Delete note permanently' : 'Move note to trash'"
+        >
+          <i class="bi bi-trash3" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Markdown formatting bar -->
+    <div class="formatting-bar" role="toolbar" aria-label="Markdown formatting">
+      @for (group of formatGroups; track $index; let last = $last) {
+        @for (action of group; track action.type) {
+          <button type="button" class="icon-btn" [title]="action.title" [attr.aria-label]="action.title" (click)="applyFormat(action.type, n.id)">
+            <i class="bi" [class]="action.icon" aria-hidden="true"></i>
+            @if (action.label) {
+              <span style="font-size: 0.74rem;">{{ action.label }}</span>
+            }
+          </button>
+        }
+        @if (!last) {
+          <div class="vr mx-1" style="color: var(--border-color);"></div>
+        }
+      }
+      <div class="ms-auto d-none d-md-flex align-items-center gap-2" style="font-size: 0.73rem; color: var(--text-secondary);">
+        <span><i class="bi bi-shield-check" style="color: var(--accent);" aria-hidden="true"></i> Folders are optional • Privacy Shield protects card previews</span>
+      </div>
+    </div>
+
+    <!-- Write / split / preview workspace -->
+    <div class="editor-workspace" [class.editor-split]="store.editorMode() === 'split'">
+      @if (isLocked()) {
+        <div class="privacy-lock-curtain" role="alert">
+          <div class="mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 66px; height: 66px; background: var(--accent-soft); color: var(--accent);">
+            <i class="bi bi-shield-lock-fill fs-2" aria-hidden="true"></i>
+          </div>
+          <h2 class="h5 fw-bold mb-1">Protected Sensitive Note</h2>
+          <p class="small mb-4" style="color: var(--text-secondary); max-width: 390px;">
+            This note is marked as sensitive so its contents remain calm and hidden from onlookers. Click below to reveal for this session.
+          </p>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn-accent" (click)="store.unlockNote(n.id)">
+              <i class="bi bi-unlock-fill" aria-hidden="true"></i> Reveal Note Content
+            </button>
+            <button type="button" class="icon-btn border px-3" style="border-color: var(--border-color) !important;" (click)="store.closeStudio()">
+              Back to Cards
+            </button>
+          </div>
+        </div>
+      }
+
+      <div class="editor-write-col" [class.d-none]="store.editorMode() === 'preview'" [attr.inert]="isLocked() ? '' : null">
+        <input
+          #titleInput
+          type="text"
+          class="note-title-input"
+          placeholder="Note Title..."
+          aria-label="Note title"
+          [value]="n.title"
+          (input)="store.setTitle(n.id, titleInput.value)"
+        />
+        <textarea
+          #bodyInput
+          class="note-body-textarea"
+          placeholder="Write calmly in plain text or Markdown... Use '- [ ]' for interactive checklists."
+          aria-label="Note body"
+          [value]="n.content"
+          (input)="store.setBody(n.id, bodyInput.value)"
+        ></textarea>
+      </div>
+
+      <div class="editor-preview-col" [class.d-none]="store.editorMode() === 'write'" [attr.inert]="isLocked() ? '' : null">
+        <h1 class="fw-bold mb-3" style="font-size: 1.85rem; letter-spacing: -0.022em;">{{ n.title || 'Untitled Note' }}</h1>
+        <app-markdown-preview
+          [content]="n.content"
+          (taskToggled)="store.toggleTask(n.id, $event.lineIdx, $event.checked)"
+        />
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <footer class="status-bar">
+      <div class="d-flex align-items-center gap-3">
+        <span>{{ metrics().words }} {{ metrics().words === 1 ? 'word' : 'words' }}</span>
+        <span aria-hidden="true">•</span>
+        <span>{{ metrics().chars }} {{ metrics().chars === 1 ? 'character' : 'characters' }}</span>
+        <span aria-hidden="true">•</span>
+        <span>{{ metrics().readMins }} min read</span>
+        <span aria-hidden="true">•</span>
+        <span>{{ metrics().doneTasks }}/{{ metrics().totalTasks }} tasks</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span class="d-none d-sm-inline">Edited {{ updatedLabel() }}</span>
+        <span class="d-flex align-items-center" role="status">
+          <span class="sync-dot" [style.background-color]="store.saving() ? '#D9AE61' : 'var(--accent)'"></span>
+          <span>{{ store.saving() ? 'Saving...' : 'Saved locally' }}</span>
+        </span>
+      </div>
+    </footer>
+  }
+</section>

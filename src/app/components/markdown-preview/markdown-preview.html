@@ -1,0 +1,45 @@
+@if (blocks().length === 0) {
+  <p style="color: var(--text-muted); font-style: italic;">Nothing to preview yet...</p>
+} @else {
+  @for (block of blocks(); track $index) {
+    @switch (block.type) {
+      @case ('h1') {
+        <h1 [appMdInline]="block.inline"></h1>
+      }
+      @case ('h2') {
+        <h2 [appMdInline]="block.inline"></h2>
+      }
+      @case ('h3') {
+        <h3 [appMdInline]="block.inline"></h3>
+      }
+      @case ('quote') {
+        <blockquote [appMdInline]="block.inline"></blockquote>
+      }
+      @case ('task') {
+        <label class="md-task-item">
+          <input
+            #box
+            type="checkbox"
+            class="md-task-checkbox"
+            [checked]="block.checked"
+            (change)="toggle(block.lineIdx, box.checked)"
+          />
+          <span [class.md-task-done]="block.checked" [appMdInline]="block.inline"></span>
+        </label>
+      }
+      @case ('list') {
+        <ul class="mb-3 ps-4">
+          @for (item of block.items; track $index) {
+            <li class="mb-1" [appMdInline]="item"></li>
+          }
+        </ul>
+      }
+      @case ('code') {
+        <pre><code>{{ block.code }}</code></pre>
+      }
+      @default {
+        <p [appMdInline]="block.inline"></p>
+      }
+    }
+  }
+}
